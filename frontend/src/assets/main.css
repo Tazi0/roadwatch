@@ -1,0 +1,26 @@
+@import './base.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+main {
+  padding: 0 1rem;
+  max-width: 1500px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 50vh;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121826;
+    color: white;
+  }
+}
