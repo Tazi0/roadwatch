@@ -20,7 +20,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./swagger-spec.json
+            Location: ./swagger/swagger-spec.json
       MethodSettings:
         - ResourcePath: "/*"
           HttpMethod: "*"
@@ -59,6 +59,27 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
+
+  SwaggerUiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./swagger/
+      Handler: app.handler
+      Runtime: nodejs20.x
+      Events:
+        SwaggerUi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /api-docs
+            Method: GET
+        SwaggerUiProxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /api-docs/{proxy+}
+            Method: GET
       
   # Incident bounded context
   GetAllIncidentsFunction:
@@ -119,7 +140,9 @@ Outputs:
   IncidentTable:
     Description: "DynamoDB Table for storing incidents"
     Value: !Ref IncidentTable
-   
+  SwaggerUiFunction:
+    Description: "Swagger ui Lambda Function ARN"
+    Value: !GetAtt SwaggerUiFunction.Arn
   # Incident bounded context
   GetAllIncidentsFunction:
     Description: "Get all Incident Lambda Function ARN"
