@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  RoadWatch
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Handler: app.lambda_handler
+    Runtime: python3.12
+    ReservedConcurrentExecutions: 1
+
+Resources:
+  IncidentsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./swagger-spec.json
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          MetricsEnabled: true
+
+  IncidentTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: IncidentTable
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      
+  # Incident bounded context
+  GetAllIncidentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/get_all_incidents/
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents
+            Method: get
+  GetIncidentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/get_incident/
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents/{incident_id}
+            Method: get
+
+  # PostNewIncidentsFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Role: arn:aws:iam::373552985319:role/LabRole
+  #     CodeUri: ./incident/post_new_incidents/
+  #     Events:
+  #       RoadIncidentsNotificationEvent:
+  #         Type: SNS
+  #         Properties:
+  #           Topic: arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification
+
+  # Salvor bounded context
+  # RequestSalvorStateMachine:
+  #   Type: AWS::Serverless::StateMachine
+  #   Properties:
+  #     Role: arn:aws:iam::373552985319:role/LabRole
+  #     DefinitionUri: ./salvor/statemachine/request_salvor.asl.json
+  #     DefinitionSubstitutions:
+  #       SubmitJobFunction: !GetAtt SubmitJobFunction.Arn
+
+Outputs:
+  IncidentsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Incidents function"
+    Value: !Sub "https://${IncidentsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  IncidentTable:
+    Description: "DynamoDB Table for storing incidents"
+    Value: !Ref IncidentTable
+   
+  # Incident bounded context
+  GetAllIncidentsFunction:
+    Description: "Get all Incident Lambda Function ARN"
+    Value: !GetAtt GetAllIncidentsFunction.Arn
+  GetIncidentFunction:
+    Description: "Get Incident Lambda Function ARN"
+    Value: !GetAtt GetIncidentFunction.Arn
+  # PostNewIncidentsFunction:
+  #   Description: "Post New Incidents Lambda Function ARN"
+  #   Value: !GetAtt PostNewIncidentsFunction.Arn
+
+  # Salvor bounded context
+  # RequestSalvorStateMachine:
+  #   Description: "Request Salvor State Machine ARN"
+  #   Value: !GetAtt RequestSalvorStateMachine.Arn
