@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import Analytics from '@/components/organisms/Analytics.vue'
 import EditIncident from '@/components/organisms/EditIncident.vue'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIncidentsStore } from '@/stores/incidents'
 import {
   RequestStatus,
@@ -115,12 +117,28 @@ fakeData()
 
 <template>
   <main>
-    <!-- TODO: update to submit patch to api -->
-    <EditIncident
-      v-if="store.selected"
-      :incident="store.selected"
-      @update="(incident) => console.log(incident)"
-      @submitSalvorRequest="(incident) => console.log(incident)"
-    />
+    <Tabs default-value="analytics" class="py-5">
+      <TabsList class="mx-auto">
+        <TabsTrigger value="map">Globale map</TabsTrigger>
+        <TabsTrigger value="edit">{{ store.selected ? 'Bewerk' : 'Creeër' }} Incident</TabsTrigger>
+        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+      </TabsList>
+      <TabsContent value="map">
+        <p>Map</p>
+      </TabsContent>
+      <TabsContent value="edit">
+        <!-- TODO: update to submit patch to api (wss met watch) -->
+        <EditIncident
+          :incident="store.selected"
+          auto-update
+          @create="(incident) => console.log(incident)"
+          @update="(incident) => console.log(incident)"
+          @submitSalvorRequest="(incident) => console.log(incident)"
+        />
+      </TabsContent>
+      <TabsContent value="analytics">
+        <Analytics :incidents="store.incidents" />
+      </TabsContent>
+    </Tabs>
   </main>
 </template>

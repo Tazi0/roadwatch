@@ -1,23 +1,46 @@
 <script setup lang="ts">
 import { IncidentSituation, IncidentStatus, type Incident } from '@/types/api'
-import { defineProps, ref, type PropType } from 'vue'
+import { defineProps, watch, type PropType } from 'vue'
 import Input from '@/components/atoms/Input.vue'
 import Heading from '@/components/atoms/Heading.vue'
-import Button from '@/components/atoms/Button.vue'
+import { Button } from '@/components/ui/button'
+import { useIncidentsStore } from '@/stores/incidents'
+
+const store = useIncidentsStore()
 
 const emit = defineEmits<{
   (e: 'update', value: Incident): void
+  (e: 'create', value: Incident): void
   (e: 'submitSalvorRequest', value: Incident): void
 }>()
 
 const props = defineProps({
   incident: {
     type: Object as PropType<Incident>,
-    required: true,
+    required: false,
+  },
+  autoUpdate: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
 })
 
-const incident = ref(props.incident)
+let oldIncident = props.incident || ({} as Incident)
+let incident = props.incident || ({} as Incident)
+
+if (props.autoUpdate) {
+  if (store.selected) {
+    incident = store.selected
+  }
+
+  watch(store, (newStore) => {
+    if (newStore.selected) {
+      incident = newStore.selected
+      oldIncident = newStore.selected
+    }
+  })
+}
 
 const incidentSituationOptions = [
   { value: IncidentSituation.VehicleObstruction, label: 'Vehicle Obstruction' },
@@ -34,13 +57,20 @@ const incidentStatusOptions = [
 
 function handleSubmit(event: Event) {
   event.preventDefault()
-  emit('update', props.incident)
+  emit('create', incident)
+  oldIncident = incident
+}
+
+function handeClear() {
+  incident = {} as Incident
+  oldIncident = {} as Incident
 }
 </script>
 
 <template>
   <div>
-    <Heading level="1">Edit Incident</Heading>
+    <Heading level="1" v-if="oldIncident.id">Edit Incident</Heading>
+    <Heading level="1" v-else>Creeër Incident</Heading>
 
     <form class="flex flex-col gap-3">
       <Input
@@ -49,7 +79,7 @@ function handleSubmit(event: Event) {
         type="text"
         placeholder="Incident ID"
         required
-        disabled
+        :disabled="!!oldIncident.id"
         inputId="incident-id"
         @input="incident.id = $event as string"
       />
@@ -98,10 +128,15 @@ function handleSubmit(event: Event) {
     </form>
 
     <div class="flex gap-5 mt-6">
-      <Button type="button" theme="primary" @click="() => emit('submitSalvorRequest', incident)">
-        Verstuur berger
-      </Button>
-      <Button type="submit" theme="secondary" @click="handleSubmit">Wijzigingen opslaan</Button>
+      <template v-if="oldIncident.id">
+        <Button type="button" @click="() => emit('submitSalvorRequest', incident)">
+          Verstuur berger
+        </Button>
+        <Button type="button" variant="destructive" @click="handeClear">Clear</Button>
+      </template>
+      <template v-else>
+        <Button type="submit" @click="handleSubmit">Incident aanmaken</Button>
+      </template>
     </div>
   </div>
 </template>

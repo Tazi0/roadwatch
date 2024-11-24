@@ -2,7 +2,7 @@
 import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps<{
-  value: string | number
+  value?: string | number
   type: string
   placeholder: string
   disabled?: boolean
