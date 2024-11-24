@@ -8,7 +8,7 @@ table_name = os.environ['TABLE_NAME']
 table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):    
-    print(f"{event} {type(event)}")
+    print(f"Event: {event}")
 
     try:
         response = table.get_item(

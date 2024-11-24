@@ -47,6 +47,8 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
       GlobalSecondaryIndexes:
         - IndexName: GSI1
           KeySchema:
@@ -60,26 +62,26 @@ Resources:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
 
-  SwaggerUiFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Role: arn:aws:iam::373552985319:role/LabRole
-      CodeUri: ./swagger/
-      Handler: app.handler
-      Runtime: nodejs20.x
-      Events:
-        SwaggerUi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref "IncidentsApi"
-            Path: /api-docs
-            Method: GET
-        SwaggerUiProxy:
-          Type: Api
-          Properties:
-            RestApiId: !Ref "IncidentsApi"
-            Path: /api-docs/{proxy+}
-            Method: GET
+  # SwaggerUiFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Role: arn:aws:iam::373552985319:role/LabRole
+  #     CodeUri: ./swagger/
+  #     Handler: app.handler
+  #     Runtime: nodejs20.x
+  #     Events:
+  #       SwaggerUi:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref "IncidentsApi"
+  #           Path: /api-docs
+  #           Method: GET
+  #       SwaggerUiProxy:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref "IncidentsApi"
+  #           Path: /api-docs/{proxy+}
+  #           Method: GET
       
   # Incident bounded context
   GetAllIncidentsFunction:
@@ -112,17 +114,19 @@ Resources:
             RestApiId: !Ref "IncidentsApi"
             Path: /incidents/{incident_id}
             Method: get
-
-  # PostNewIncidentsFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     Role: arn:aws:iam::373552985319:role/LabRole
-  #     CodeUri: ./incident/post_new_incidents/
-  #     Events:
-  #       RoadIncidentsNotificationEvent:
-  #         Type: SNS
-  #         Properties:
-  #           Topic: arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification
+  PostNewIncidentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/post_new_incidents/
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref IncidentTable
+      Events:
+        RoadIncidentsNotificationEvent:
+          Type: SNS
+          Properties:
+            Topic: arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification
 
   # Salvor bounded context
   # RequestSalvorStateMachine:
@@ -140,9 +144,10 @@ Outputs:
   IncidentTable:
     Description: "DynamoDB Table for storing incidents"
     Value: !Ref IncidentTable
-  SwaggerUiFunction:
-    Description: "Swagger ui Lambda Function ARN"
-    Value: !GetAtt SwaggerUiFunction.Arn
+  # SwaggerUiFunction:
+  #   Description: "Swagger ui Lambda Function ARN"
+  #   Value: !GetAtt SwaggerUiFunction.Arn
+
   # Incident bounded context
   GetAllIncidentsFunction:
     Description: "Get all Incident Lambda Function ARN"
@@ -150,9 +155,9 @@ Outputs:
   GetIncidentFunction:
     Description: "Get Incident Lambda Function ARN"
     Value: !GetAtt GetIncidentFunction.Arn
-  # PostNewIncidentsFunction:
-  #   Description: "Post New Incidents Lambda Function ARN"
-  #   Value: !GetAtt PostNewIncidentsFunction.Arn
+  PostNewIncidentsFunction:
+    Description: "Post New Incidents Lambda Function ARN"
+    Value: !GetAtt PostNewIncidentsFunction.Arn
 
   # Salvor bounded context
   # RequestSalvorStateMachine:
