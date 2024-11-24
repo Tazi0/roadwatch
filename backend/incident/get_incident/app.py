@@ -10,30 +10,41 @@ table = dynamodb.Table(table_name)
 def lambda_handler(event, context):    
     print(f"{event} {type(event)}")
 
-    # try:
-    #     response = table.query(
-    #         KeyConditionExpression=Key('PK').eq('INCIDENT')
-    #     )
+    try:
+        response = table.get_item(
+            Key={
+                'PK': 'INCIDENT',
+                'SK': f'INCIDENT#{event['pathParameters']['incident_id']}'
+            }
+        )
         
-    #     incidents = response['Items']
+        print(f"Response: {response}")
         
-    #     incidents_json = json.dumps(incidents)
+        if 'Item' not in response:
+            return {
+                'statusCode': 404,
+                'body': json.dumps({'message': 'Incident not found'}),
+                'headers': {
+                    'content-type': 'application/json'
+                },
+                "isBase64Encoded": False
+            }
 
-    #     return {
-    #         'statusCode': 200,
-    #         'body': incidents_json,
-    #         'headers': {
-    #             'content-type': 'application/json'
-    #         },
-    #         'isBase64Encoded': False
-    #     }
-    # except Exception as e:
-    #     print(f"Error fetching incidents: {str(e)}")
-    #     return {
-    #         'statusCode': 500,
-    #         'body': json.dumps({'message': 'Error fetching incidents'}),
-    #         'headers': {
-    #             'content-type': 'application/json'
-    #         },
-    #         'isBase64Encoded': False
-    #     }
+        return {
+            'statusCode': 200,
+            'body': json.dumps(response['Item']),
+            'headers': {
+                'content-type': 'application/json'
+            },
+            "isBase64Encoded": False
+        }
+    except Exception as e:
+        print(f"Error fetching incidents: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': 'Error fetching incidents'}),
+            'headers': {
+                'content-type': 'application/json'
+            },
+            'isBase64Encoded': False
+        }

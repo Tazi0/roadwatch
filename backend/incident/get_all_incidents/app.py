@@ -15,13 +15,11 @@ def lambda_handler(event, context):
             KeyConditionExpression=Key('PK').eq('INCIDENT')
         )
         
-        incidents = response['Items']
-        
-        incidents_json = json.dumps(incidents)
+        print(f"Response: {response}")
 
         return {
             'statusCode': 200,
-            'body': incidents_json,
+            'body': json.dumps(response['Items']),
             'headers': {
                 'content-type': 'application/json'
             },

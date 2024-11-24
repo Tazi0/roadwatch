@@ -9,6 +9,7 @@
 - Start monitoring for logs:
   - `sam logs`
   - `sam logs --include-traces --tail`
+  - `sam logs --name {name_of_resource_in_template}`
 
 # Tests
 - `pytest`
