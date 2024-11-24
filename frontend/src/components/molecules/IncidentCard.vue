@@ -4,11 +4,17 @@ import { IncidentStatus, RequestStatus, type Incident } from '@/types/api'
 import type { PropType } from 'vue'
 import IncidentTag from '@/components/atoms/IncidentTag.vue'
 import { useIncidentsStore } from '@/stores/incidents'
+import { computed } from 'vue'
 
 const props = defineProps({
   incident: {
     type: Object as PropType<Incident>,
     required: true,
+  },
+  active: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
 })
 
@@ -19,10 +25,16 @@ const confirmed = props.incident.requests?.find((r) => r.status === RequestStatu
 const onClick = () => {
   select(props.incident)
 }
+
+const classes = computed(() =>
+  ['cursor-pointer border', props.active ? 'border-blue-500' : 'border-transparent']
+    .filter(Boolean)
+    .join(' '),
+)
 </script>
 
 <template>
-  <Rounded class="cursor-pointer" :onclick="onClick">
+  <Rounded :class="classes" :onclick="onClick">
     <div class="flex justify-between">
       <p>{{ incident.segment?.roadNumber ?? incident.id }}</p>
       <IncidentTag :incident="incident" />
