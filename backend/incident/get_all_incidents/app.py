@@ -2,10 +2,12 @@ import boto3
 import json
 import os
 from boto3.dynamodb.conditions import Key
+from decorators import cors_headers
 
 dynamodb = boto3.resource('dynamodb')
 incident_table = dynamodb.Table(os.environ['INCIDENT_TABLE_NAME'])
 
+@cors_headers('GET')
 def lambda_handler(event, context):    
     print(f"Event: {event}")
 

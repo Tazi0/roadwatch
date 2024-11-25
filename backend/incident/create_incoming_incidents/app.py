@@ -21,6 +21,17 @@ def lambda_handler(event, context):
                 print(f"Failed to fetch incident data. Status code: {response.status_code}")
                 continue
             
+            existing_incident = incident_table.get_item(
+                Key={
+                    'PK': 'INCIDENT',
+                    'SK': f'INCIDENT#{incident_id}'
+                }
+            )
+            
+            if 'Item' in existing_incident:
+                print(f"Incident already exists: {incident_id}")
+                continue
+            
             incident_data = response.json()
             print(f"Incident data: {incident_data}")
 
@@ -40,19 +51,10 @@ def lambda_handler(event, context):
                     'incidentStatus': 'REPORTED',
                     'incidentLat': situation_record['groupOfLocations']['locationForDisplay']['latitude'],
                     'incidentLong': situation_record['groupOfLocations']['locationForDisplay']['longitude'],
+                    'GSI1PK': 'INCIDENT',
+                    'GSI1SK': f'REPORTED#{incident_id}'
                 }
             )
         except Exception as e:
             print(f"Error fetching incident data: {str(e)}")
-            return {
-                'statusCode': 500,
-                'body': json.dumps({'message': 'Error fetching incident data'}),
-                'headers': {
-                    'content-type': 'application/json'
-                },
-                'isBase64Encoded': False
-            }
-            
-    # Een incident kan handmatig afgesloten worden. Dit incident wordt niet meer weergegeven in de FE. Het incident blijft afgesloten ook al komt het incident opnieuw binnen via de incidenten API.
-
     

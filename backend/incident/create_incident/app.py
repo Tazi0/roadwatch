@@ -3,10 +3,12 @@ import json
 import os
 from datetime import datetime
 import uuid
+from decorators import cors_headers
 
 dynamodb = boto3.resource('dynamodb')
 incident_table = dynamodb.Table(os.environ['INCIDENT_TABLE_NAME'])
 
+@cors_headers('POST')
 def lambda_handler(event, context):
     print(f"Event: {event}")
     
@@ -17,20 +19,22 @@ def lambda_handler(event, context):
                 
         incident_id = str(uuid.uuid4())
                 
-        # incident_table.put_item(
-        #     Item={
-        #         'PK': 'INCIDENT',
-        #         'SK': f'INCIDENT#{incident_id}',
-        #         'type': 'INCIDENT',
-        #         'incidentId': incident_id,
-        #         'createdAt': body.get('createdAt'),
-        #         'updatedAt': datetime.now().isoformat(),
-        #         'incidentSituation': body.get('incidentSituation'),
-        #         'incidentStatus': 'REPORTED',
-        #         'incidentLat': body.get('incidentLat'),
-        #         'incidentLong': body.get('incidentLong'),
-        #     }
-        # )
+        incident_table.put_item(
+            Item={
+                'PK': 'INCIDENT',
+                'SK': f'INCIDENT#{incident_id}',
+                'type': 'INCIDENT',
+                'incidentId': incident_id,
+                'createdAt': body.get('createdAt'),
+                'updatedAt': datetime.now().isoformat(),
+                'incidentSituation': body.get('incidentSituation'),
+                'incidentStatus': 'REPORTED',
+                'incidentLat': body.get('incidentLat'),
+                'incidentLong': body.get('incidentLong'),
+                'GSI1PK': 'INCIDENT',
+                'GSI1SK': f'REPORTED#{incident_id}'
+            }
+        )
         
         return {
             'statusCode': 201,
@@ -40,7 +44,6 @@ def lambda_handler(event, context):
             },
             'isBase64Encoded': False
         }
-    
     except Exception as e:
         print(f"Error fetching incident data: {str(e)}")
         return {
@@ -50,8 +53,5 @@ def lambda_handler(event, context):
                 'content-type': 'application/json'
             },
             'isBase64Encoded': False
-        }
-            
-    # Een incident kan handmatig afgesloten worden. Dit incident wordt niet meer weergegeven in de FE. Het incident blijft afgesloten ook al komt het incident opnieuw binnen via de incidenten API.
-
+        }        
     

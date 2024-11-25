@@ -4,12 +4,19 @@ Description: >
   RoadWatch
 
 Globals:
+  Api:
+    Cors:
+      AllowMethods: "'POST, GET, PUT, OPTIONS'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
   Function:
     Timeout: 3
     MemorySize: 128
     Handler: app.lambda_handler
     Runtime: python3.12
     ReservedConcurrentExecutions: 1
+    Layers:
+      - !Ref UtilsLayer
 
 Resources:
   IncidentsApi:
@@ -46,7 +53,14 @@ Resources:
   #           RestApiId: !Ref "IncidentsApi"
   #           Path: /api-docs/{proxy+}
   #           Method: GET
-      
+
+  UtilsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ./utils_layer/
+      CompatibleRuntimes:
+        - python3.12
+
   # Incident bounded context
   IncidentTable:
     Type: AWS::DynamoDB::Table
@@ -129,6 +143,21 @@ Resources:
             RestApiId: !Ref "IncidentsApi"
             Path: /incidents
             Method: post
+  UpdateIncidentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/update_incident/
+      Environment:
+        Variables:
+          INCIDENT_TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents/{incident_id}
+            Method: put
   CreateIncomingIncidents:
     Type: AWS::Serverless::Function
     Properties:
@@ -207,6 +236,9 @@ Outputs:
   CreateIncidentFunction:
     Description: "Create Incident Lambda Function ARN"
     Value: !GetAtt CreateIncidentFunction.Arn
+  UpdateIncidentFunction:
+    Description: "Update Incident Lambda Function ARN"
+    Value: !GetAtt UpdateIncidentFunction.Arn
   CreateIncomingIncidents:
     Description: "Post New Incidents Lambda Function ARN"
     Value: !GetAtt CreateIncomingIncidents.Arn

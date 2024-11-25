@@ -1,0 +1,21 @@
+meta {
+  name: Update incident
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{prod-url}}/incidents/08961786-061f-4db3-8e98-55069703c2d0
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "createdAt": "2022-11-25T13:41:25",
+    "incidentSituation": "VehicleObstruction",
+    "incidentLat": "53.2734",
+    "incidentLong": "-7.77832031",
+    "incidentStatus": "REPORTED"
+  }
+}
