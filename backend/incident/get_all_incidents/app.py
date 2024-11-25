@@ -4,14 +4,13 @@ import os
 from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
-table_name = os.environ['TABLE_NAME']
-table = dynamodb.Table(table_name)
+incident_table = dynamodb.Table(os.environ['INCIDENT_TABLE_NAME'])
 
 def lambda_handler(event, context):    
     print(f"Event: {event}")
 
     try:
-        response = table.query(
+        response = incident_table.query(
             KeyConditionExpression=Key('PK').eq('INCIDENT')
         )
         

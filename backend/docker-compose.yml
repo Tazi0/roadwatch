@@ -1,0 +1,8 @@
+services:
+  localstack:
+    build: localstack/localstack
+    container_name: localstack
+    environment:
+      - SERVICES=cloudformation,dynamodb,lambda # Comma separated list of services
+    ports:
+      - "4566:4566"

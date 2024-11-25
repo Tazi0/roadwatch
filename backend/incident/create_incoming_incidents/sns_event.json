@@ -1,0 +1,22 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification:7a676c24-655d-4605-83dc-6e35168e84c7",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "4315be8b-5fee-5bca-95fa-e1363615aee9",
+                "TopicArn": "arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification",
+                "Subject": "New road incidents status available",
+                "Message": "{'id': '4ac2cff6-32f2-42f2-83ba-f845a52d6714', 'published': '2024-11-24T17: 51: 55.208906'}",
+                "Timestamp": "2024-11-24T17:51:55.845Z",
+                "SignatureVersion": "1",
+                "Signature": "k8gCKyKhlkc9BYnDHnlhghoWaUN00wXeQhbCUwGOOmE/KT/K8F53HgcPQZem/8vzrVShiax9dt9ouwv9+R4sBvKm1+i8z5Zx1qBhRB/fn2ZXjpMYitaHVlpz3kp4X1aVldVBUb9g/R7drFrrXXGD2JhlOS3EPB69EaYjt7jV7qNJ3qaLn6wK4l0dxeVzQyWXa1+UA6qk6pJ6cKgWo7f51hN5U5nQYyDpDeMGywVDX2Cgu13LRg81CL155WqYwoZ/cl9R7rZ2i6uqU27ciNHCqwRohQCcWluafmJhKtRA1oMcBj0PKR5QgSpMYBDNbVfgvraMAujFvayT7818xMAlBw==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-9c6465fa7f48f5cacd23014631ec1136.pem",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification:7a676c24-655d-4605-83dc-6e35168e84c7",
+                "MessageAttributes": {}
+            }
+        }
+    ]
+}

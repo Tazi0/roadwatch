@@ -1,11 +1,11 @@
 meta {
-  name: Get googled
+  name: Get all incidents
   type: http
   seq: 2
 }
 
 get {
-  url: {{prod-url}}
+  url: {{prod-url}}/incidents
   body: none
   auth: none
 }

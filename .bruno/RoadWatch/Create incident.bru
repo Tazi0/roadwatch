@@ -1,0 +1,19 @@
+meta {
+  name: Create incident
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{prod-url}}/incidents
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "incidentSituation": "Obstruction",
+    "incidentLat": "53.2734",
+    "incidentLong": "-7.77832031"
+  }
+}

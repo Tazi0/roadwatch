@@ -24,6 +24,25 @@
           "passthroughBehavior": "when_no_match",
           "type": "aws_proxy"
         }
+      },
+      "post": {
+        "summary": "Creates a new incident",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateIncidentFunction.Arn}/invocations"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
       }
     },
     "/incidents/{incident_id}": {
