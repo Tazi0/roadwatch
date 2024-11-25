@@ -1,0 +1,41 @@
+{
+  "Comment": "Request Salvor",
+  "StartAt": "Submit Job",
+  "States": {
+    "Submit Job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "Payload": {
+          "Result.$": "$",
+          "TaskToken.$": "$$.Task.Token"
+        },
+        "FunctionName": "${SubmitJobFunction}"
+      },
+      "TimeoutSeconds": 30,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Timeout"
+          ],
+          "Next": "Task Token Timeout"
+        },
+        {
+          "ErrorEquals": [
+            "States.JobFailed"
+          ],
+          "Next": "Send Task Failure"
+        }
+      ],
+      "End": true
+    },
+    "Send Task Failure": {
+      "Type": "Fail",
+      "Cause": "Send Task Failure"
+    },
+    "Task Token Timeout": {
+      "Type": "Fail",
+      "Cause": "Task token timeout"
+    }
+  }
+}

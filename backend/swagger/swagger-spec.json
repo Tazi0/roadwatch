@@ -1,0 +1,123 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0",
+    "title": "RoadWatch"
+  },
+  "paths": {
+    "/incidents": {
+      "get": {
+        "summary": "Returns a list of all incidents",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "INTERNAL SERVER ERROR"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllIncidentsFunction.Arn}/invocations"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      },
+      "post": {
+        "summary": "Creates a new incident",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "CREATED"
+          }, 
+          "500": {
+            "description": "INTERNAL SERVER ERROR"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateIncidentFunction.Arn}/invocations"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    },
+    "/incidents/{incident_id}": {
+      "get": {
+        "summary": "Returns a single incident",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "NOT FOUND"
+          },
+          "500": {
+            "description": "INTERNAL SERVER ERROR"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetIncidentFunction.Arn}/invocations"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      },
+      "put": {
+        "summary": "Updates an incident",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "NOT FOUND"
+          },
+          "500": {
+            "description": "INTERNAL SERVER ERROR"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "httpMethod": "POST",
+          "uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateIncidentFunction.Arn}/invocations"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "aws_proxy"
+        }
+      }
+    }
+  }
+}

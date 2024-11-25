@@ -1,0 +1,18 @@
+{
+    "name": "swagger-ui",
+    "version": "1.0.0",
+    "description": "An AWS SAM app for a Swagger UI alongside your API in AWS API Gateway.",
+    "main": "app.js",
+    "keywords": [
+        "swagger-ui",
+        "aws-sam",
+        "aws-api-gateway",
+        "aws-lambda",
+        "node-js"
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "serverless-http": "^2.6.1",
+        "swagger-ui-express": "^5.0.1"
+    }
+}

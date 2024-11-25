@@ -1,0 +1,252 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  RoadWatch
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'POST, GET, PUT, OPTIONS'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Handler: app.lambda_handler
+    Runtime: python3.12
+    ReservedConcurrentExecutions: 1
+    Layers:
+      - !Ref UtilsLayer
+
+Resources:
+  IncidentsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./swagger/swagger-spec.json
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          MetricsEnabled: true
+
+  # SwaggerUiFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Role: arn:aws:iam::373552985319:role/LabRole
+  #     CodeUri: ./swagger/
+  #     Handler: app.handler
+  #     Runtime: nodejs20.x
+  #     Events:
+  #       SwaggerUi:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref "IncidentsApi"
+  #           Path: /api-docs
+  #           Method: GET
+  #       SwaggerUiProxy:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref "IncidentsApi"
+  #           Path: /api-docs/{proxy+}
+  #           Method: GET
+
+  UtilsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ./utils_layer/
+      CompatibleRuntimes:
+        - python3.12
+
+  # Incident bounded context
+  IncidentTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: IncidentTable
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+  GetAllIncidentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/get_all_incidents/
+      Environment:
+        Variables:
+          INCIDENT_TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents
+            Method: get
+  GetIncidentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/get_incident/
+      Environment:
+        Variables:
+          INCIDENT_TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents/{incident_id}
+            Method: get
+  CreateIncidentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/create_incident/
+      Environment:
+        Variables:
+          INCIDENT_TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents
+            Method: post
+  UpdateIncidentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/update_incident/
+      Environment:
+        Variables:
+          INCIDENT_TABLE_NAME: !Ref IncidentTable
+      Events:
+        GetNotes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref "IncidentsApi"
+            Path: /incidents/{incident_id}
+            Method: put
+  CreateIncomingIncidents:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: arn:aws:iam::373552985319:role/LabRole
+      CodeUri: ./incident/create_incoming_incidents/
+      Environment:
+        Variables:
+          INCIDENT_TABLE_NAME: !Ref IncidentTable
+      Events:
+        RoadIncidentsNotificationEvent:
+          Type: SNS
+          Properties:
+            Topic: arn:aws:sns:us-east-1:603768888180:RoadIncidentsNotification
+
+  # Salvor bounded context
+  SalvorRequestTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SalvorRequestTable
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+  # RequestSalvorStateMachine:
+  #   Type: AWS::Serverless::StateMachine
+  #   Properties:
+  #     Role: arn:aws:iam::373552985319:role/LabRole
+  #     DefinitionUri: ./salvor/statemachine/request_salvor.asl.json
+  #     DefinitionSubstitutions:
+  #       SubmitJobFunction: !GetAtt SubmitJobFunction.Arn
+
+Outputs:
+  IncidentsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Incidents function"
+    Value: !Sub "https://${IncidentsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  # SwaggerUiFunction:
+  #   Description: "Swagger ui Lambda Function ARN"
+  #   Value: !GetAtt SwaggerUiFunction.Arn
+
+  # Incident bounded context
+  IncidentTable:
+    Description: "DynamoDB Table for storing incidents"
+    Value: !Ref IncidentTable
+  GetAllIncidentsFunction:
+    Description: "Get all Incident Lambda Function ARN"
+    Value: !GetAtt GetAllIncidentsFunction.Arn
+  GetIncidentFunction:
+    Description: "Get Incident Lambda Function ARN"
+    Value: !GetAtt GetIncidentFunction.Arn
+  CreateIncidentFunction:
+    Description: "Create Incident Lambda Function ARN"
+    Value: !GetAtt CreateIncidentFunction.Arn
+  UpdateIncidentFunction:
+    Description: "Update Incident Lambda Function ARN"
+    Value: !GetAtt UpdateIncidentFunction.Arn
+  CreateIncomingIncidents:
+    Description: "Post New Incidents Lambda Function ARN"
+    Value: !GetAtt CreateIncomingIncidents.Arn
+
+  # Salvor bounded context
+  SalvorRequestTable:
+    Description: "DynamoDB Table for storing salvor requests"
+    Value: !Ref SalvorRequestTable
+  # RequestSalvorStateMachine:
+  #   Description: "Request Salvor State Machine ARN"
+  #   Value: !GetAtt RequestSalvorStateMachine.Arn
