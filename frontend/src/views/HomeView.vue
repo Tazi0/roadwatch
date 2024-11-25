@@ -17,6 +17,7 @@ getIncidents()
   })
   .catch((error) => {
     store.setError(error)
+    store.loading = false
   })
 </script>
 
