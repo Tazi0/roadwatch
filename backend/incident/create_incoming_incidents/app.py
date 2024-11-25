@@ -28,16 +28,22 @@ def lambda_handler(event, context):
                 }
             )
             
-            if 'Item' in existing_incident:
-                print(f"Incident already exists: {incident_id}")
+            if 'Item' in existing_incident and existing_incident['Item']['incidentStatus'] == 'COMPLETED':
+                print(f"Incident already exists and is completed: {incident_id}")
                 continue
             
             incident_data = response.json()
             print(f"Incident data: {incident_data}")
 
             situation_record = incident_data['situation'][0]['situationRecord']
-            
-            created_at = datetime.strptime(situation_record['situationRecordCreationTime'], "%Y-%m-%dT%H:%M:%SZ")
+            group_of_locations = situation_record['groupOfLocations']
+                            
+            if 'alertCLinear' in group_of_locations:
+                road_segment_id = group_of_locations['alertCLinear']['alertCMethod4PrimaryPointLocation']['alertCLocation']['specificLocation']
+            elif 'alertCPoint' in group_of_locations:
+                road_segment_id = group_of_locations['alertCPoint']['alertCMethod4PrimaryPointLocation']['alertCLocation']['specificLocation']
+            else:
+                road_segment_id = None
               
             incident_table.put_item(
                 Item={
@@ -45,14 +51,15 @@ def lambda_handler(event, context):
                     'SK': f'INCIDENT#{incident_id}',
                     'type': 'INCIDENT',
                     'incidentId': incident_id,
-                    'createdAt': created_at.isoformat(),
+                    'createdAt': situation_record['situationRecordCreationTime'],
                     'updatedAt': datetime.now().isoformat(),
                     'incidentSituation': situation_record['@xsi:type'],
                     'incidentStatus': 'REPORTED',
-                    'incidentLat': situation_record['groupOfLocations']['locationForDisplay']['latitude'],
-                    'incidentLong': situation_record['groupOfLocations']['locationForDisplay']['longitude'],
+                    'incidentLat': group_of_locations['locationForDisplay']['latitude'],
+                    'incidentLong': group_of_locations['locationForDisplay']['longitude'],
                     'GSI1PK': 'INCIDENT',
-                    'GSI1SK': f'REPORTED#{incident_id}'
+                    'GSI1SK': f'REPORTED#{incident_id}',
+                    'incidentRoadSegmentId': road_segment_id,
                 }
             )
         except Exception as e:
