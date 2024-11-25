@@ -78,9 +78,7 @@ function handeClear() {
   isNewIncident.value = true
 }
 
-console.log(incident.value);
-
-
+console.log(incident.value)
 </script>
 
 <template>

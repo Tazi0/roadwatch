@@ -29,13 +29,9 @@ const model = defineModel<string | number | Date>()
 <template>
   <div>
     <Label v-if="label" :for="inputId">{{ label }}</Label>
-    <Select 
-      v-if="type === 'select'" 
-      v-model="model as string" 
-      :defaultValue="model as string"
-      >
+    <Select v-if="type === 'select'" v-model="model as string" :defaultValue="model as string">
       <SelectTrigger>
-        <SelectValue v-if="model" :placeholder="options?.find((v) => v.value === model)?.label"/>
+        <SelectValue v-if="model" :placeholder="options?.find((v) => v.value === model)?.label" />
       </SelectTrigger>
       <SelectContent class="z-50">
         <SelectGroup>
