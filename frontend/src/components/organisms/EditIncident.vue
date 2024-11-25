@@ -52,7 +52,7 @@ const incidentStatusOptions = [
   { value: IncidentStatus.Completed, label: 'Completed' },
   { value: IncidentStatus.Failed, label: 'Failed', disabled: true },
   { value: IncidentStatus.Dispatched, label: 'Dispatched', disabled: true },
-  { value: IncidentStatus.Searching, label: 'Searching', disabled: true },
+  { value: IncidentStatus.Pending, label: 'Pending', disabled: true },
 ]
 
 function handleSubmit(event: Event) {
@@ -132,7 +132,7 @@ function handeClear() {
         <Button type="button" @click="() => emit('submitSalvorRequest', incident)">
           Verstuur berger
         </Button>
-        <Button type="button" variant="destructive" @click="handeClear">Clear</Button>
+        <Button type="button" variant="destructive" @click="handeClear">Schoonmaken</Button>
       </template>
       <template v-else>
         <Button type="submit" @click="handleSubmit">Incident aanmaken</Button>

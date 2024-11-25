@@ -5,7 +5,7 @@ export enum IncidentStatus {
   Completed = 'COMPLETED',
   Failed = 'FAILED',
   Dispatched = 'DISPATCHED',
-  Searching = 'SEARCHING', // custom status (if request is pending or accepted)
+  Pending = 'PENDING',
 }
 
 export enum IncidentSituation {
@@ -31,7 +31,7 @@ export interface Incident {
   createdAt: Date
   updatedAt: Date
   segment?: RoadSegment
-  requests?: Request[]
+  requests?: SalvorRequest[]
 }
 
 export type RoadSegment = {
@@ -41,7 +41,7 @@ export type RoadSegment = {
   secondName: string
 }
 
-export type Request = {
+export type SalvorRequest = {
   id: UUID
   salvorName: string
   status: RequestStatus

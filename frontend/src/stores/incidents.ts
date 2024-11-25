@@ -5,6 +5,8 @@ import type { Incident } from '@/types/api'
 export const useIncidentsStore = defineStore('incidents', () => {
   const incidents = ref<Incident[]>([])
   const selected = ref<Incident | undefined>(undefined)
+  const isLoading = ref(false)
+  const error = ref<string | undefined>(undefined)
 
   function set(newIncidents: Incident[]) {
     incidents.value = newIncidents
@@ -20,5 +22,9 @@ export const useIncidentsStore = defineStore('incidents', () => {
     selected.value = undefined
   }
 
-  return { incidents, selected, set, add, select, unselect }
+  function setError(message: string) {
+    error.value = message
+  }
+
+  return { incidents, selected, set, add, select, unselect, loading: isLoading, setError, error }
 })

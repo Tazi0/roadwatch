@@ -20,7 +20,7 @@ const getTagColor = (status: string) => {
       return 'red'
     case IncidentStatus.Dispatched:
       return 'blue'
-    case IncidentStatus.Searching:
+    case IncidentStatus.Pending:
       return 'orange'
     default:
       return 'gray'
