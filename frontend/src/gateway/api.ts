@@ -1,4 +1,11 @@
-import { type Incident, IncidentSituation, IncidentStatus } from '@/types/api'
+import {
+  type Incident,
+  IncidentSituation,
+  IncidentStatus,
+  RequestStatus,
+  type RoadSegment,
+  type SalvorRequest,
+} from '@/types/api'
 import axios from 'axios'
 import type { UUID } from 'crypto'
 
@@ -10,12 +17,12 @@ export const apiClient = axios.create({
   },
 })
 
-function randomUUID(): string {
+function randomUUID(): UUID {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
       v = c === 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
-  })
+  }) as UUID
 }
 
 export const getIncidents = async (): Promise<Incident[]> => {

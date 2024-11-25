@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import 'leaflet/dist/leaflet.css'
-import leaflet from 'leaflet'
-import { onMounted, type PropType } from 'vue'
+import leaflet, { type LatLngTuple } from 'leaflet'
+import { onMounted, onUnmounted, watch, type PropType } from 'vue'
 
 const props = defineProps({
   markers: {
-    type: Array as PropType<{ lat: number; lng: number }[]>,
-    required: true,
+    type: Array as PropType<{ id?: string; lat: number; lng: number }[]>,
+    required: false,
   },
   zoom: {
     type: Number,
@@ -14,16 +14,20 @@ const props = defineProps({
     required: false,
   },
   width: {
-    type: Number,
-    default: 600,
+    type: String,
+    default: '100%',
     required: false,
   },
-  height: {
-    type: Number,
-    default: 600,
+  minHeight: {
+    type: String,
+    default: '600px',
     required: false,
   },
 })
+
+const emit = defineEmits<{
+  (e: 'markerClicked', value: string): void
+}>()
 
 let map: leaflet.Map
 const mapId = 'map-' + Math.random().toString(36).substring(2, 9)
@@ -34,9 +38,6 @@ onMounted(() => {
     preferCanvas: true,
   })
 
-  const bounds = leaflet.latLngBounds(props.markers.map((marker) => [marker.lat, marker.lng]))
-  map.fitBounds(bounds)
-
   leaflet
     .tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
@@ -44,12 +45,69 @@ onMounted(() => {
     })
     .addTo(map)
 
-  props.markers.forEach((marker) => {
-    leaflet.marker([marker.lat, marker.lng]).addTo(map)
+  // centralize on the netherlands if no markers are provided
+  if (!props.markers) {
+    setTimeout(() => {
+      const center = leaflet.latLng(52.1326, 5.2913)
+      map.fitBounds(leaflet.latLngBounds(center, center))
+      map.zoomOut(10)
+      map.invalidateSize()
+    })
+    return
+  }
+
+  // create markers
+  const markers = props.markers.map((marker) => [marker.lat, marker.lng]) as LatLngTuple[]
+
+  // wait for the map to be rendered
+  // otherwise it would cause a bug centering the map on top left
+  setTimeout(() => {
+    const bounds = leaflet.latLngBounds(markers)
+    map.fitBounds(bounds)
+    map.invalidateSize()
+  }, 0)
+
+  markers.forEach((marker) => {
+    leaflet
+      .marker(marker)
+      .addTo(map)
+      .on('click', () => {
+        const idOfMarker = props.markers!.find(
+          (m) => m.lat === marker[0] && m.lng === marker[1],
+        )?.id
+        if (idOfMarker) emit('markerClicked', idOfMarker)
+      })
   })
 })
+
+onUnmounted(() => {
+  if (!map) return
+  map.remove()
+})
+
+// watch for changes in markers
+watch(
+  () => props.markers,
+  (newMarkers) => {
+    if (!map) return
+    // remove old markers
+    map.eachLayer((layer) => {
+      if (layer instanceof leaflet.Marker) {
+        map.removeLayer(layer)
+      }
+    })
+
+    if (!newMarkers) return
+
+    const bounds = leaflet.latLngBounds(newMarkers.map((marker) => [marker.lat, marker.lng]))
+    map.fitBounds(bounds)
+    newMarkers.forEach((marker) => {
+      leaflet.marker([marker.lat, marker.lng]).addTo(map)
+    })
+  },
+)
 </script>
 
 <template>
-  <div :id="mapId" style="width: 100%; min-height: 600px"></div>
+  <div :id="mapId" class="z-0" :style="{ width, minHeight }"></div>
 </template>

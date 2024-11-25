@@ -5,7 +5,7 @@ import Input from '@/components/atoms/Input.vue'
 import Heading from '@/components/atoms/Heading.vue'
 import { Button } from '@/components/ui/button'
 import { useIncidentsStore } from '@/stores/incidents'
-import type { UUID } from 'crypto'
+import Map from '@/components/atoms/Map.vue'
 
 const store = useIncidentsStore()
 
@@ -77,6 +77,10 @@ function handeClear() {
   oldIncident = {} as Incident
   isNewIncident.value = true
 }
+
+console.log(incident.value);
+
+
 </script>
 
 <template>
@@ -87,54 +91,69 @@ function handeClear() {
     <form class="flex flex-col gap-3 mb-6">
       <Input
         v-if="!isNewIncident"
+        v-model="incident.id"
         label="Incident ID"
-        :value="incident.id"
         type="text"
         placeholder="Incident ID"
         required
         :disabled="!isNewIncident"
         inputId="incident-id"
-        @input="incident.id = $event as UUID"
       />
 
       <!-- input for situation -->
       <Input
+        v-model="incident.situation"
         label="Situation"
-        :value="incident.situation"
         type="select"
         inputId="situation"
         :options="incidentSituationOptions"
-        @input="incident.situation = $event as IncidentSituation"
       />
 
       <!-- input for status -->
       <Input
+        v-model="incident.status"
         label="Status"
-        :value="incident.status"
         type="select"
         inputId="status"
         :options="incidentStatusOptions"
-        @input="incident.status = $event as IncidentStatus"
+      />
+
+      <!-- input for createdAt -->
+      <Input
+        v-model="incident.createdAt"
+        label="Created At"
+        type="datetime-local"
+        inputId="created-at"
       />
 
       <div class="grid grid-cols-2 gap-10">
-        <Input
-          label="Latitude"
-          :value="incident.lat"
-          type="number"
-          placeholder="Latitude"
-          inputId="latitude"
-          @input="incident.lat = $event as number"
+        <Map
+          v-if="incident.lat && incident.long"
+          :markers="[{ lat: incident.lat, lng: incident.long }]"
+          :zoom="50"
+          class="aspect-square"
+          minHeight="300px"
         />
+        <Map v-else class="aspect-square" minHeight="300px" />
+        <div>
+          <Input
+            label="Latitude"
+            :value="incident.lat"
+            type="number"
+            placeholder="Latitude"
+            inputId="latitude"
+            @input="incident.lat = $event as number"
+          />
 
-        <Input
-          label="Longitude"
-          :value="incident.long"
-          type="number"
-          placeholder="Longitude"
-          inputId="longitude"
-          @input="incident.long = $event as number"
-        />
+          <Input
+            label="Longitude"
+            :value="incident.long"
+            type="number"
+            placeholder="Longitude"
+            inputId="longitude"
+            @input="incident.long = $event as number"
+          />
+        </div>
       </div>
     </form>
 

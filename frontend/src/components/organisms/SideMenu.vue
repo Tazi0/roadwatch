@@ -12,12 +12,12 @@ const filter = (incident: Incident) => incident.status !== IncidentStatus.Comple
 </script>
 
 <template>
-  <aside class="border-r border-black dark:border-gray-300 p-3">
+  <aside class="border-r border-black dark:border-gray-300 p-3 h-screen flex flex-col">
     <RouterLink to="/"><Logo /></RouterLink>
     <br />
 
     <Heading level="4">Actieve Incidenten</Heading>
-    <div class="grid grid-cols-1 gap-2">
+    <div class="grid grid-cols-1 gap-2 h-full overflow-y-auto">
       <IncidentCard
         v-for="(incident, i) in store.incidents.filter(filter)"
         :key="i"

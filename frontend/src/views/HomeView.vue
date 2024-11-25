@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getIncidents } from '@/gateway/api'
 import { useIncidentsStore } from '@/stores/incidents'
 import IncidentsMap from '@/components/organisms/IncidentsMap.vue'
+import Heading from '@/components/atoms/Heading.vue'
+import HighlightIncident from '@/components/organisms/HighlightIncident.vue'
+import { IncidentStatus } from '@/types/api'
 
 const store = useIncidentsStore()
 
@@ -40,7 +43,13 @@ getIncidents()
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="map">
-          <IncidentsMap :incidents="store.incidents" />
+          <IncidentsMap
+            :incidents="store.incidents.filter((v) => v.status !== IncidentStatus.Completed)"
+          />
+          <div v-if="store.selected">
+            <Heading level="3" class="mt-5">Geselecteerd incident</Heading>
+            <HighlightIncident :incident="store.selected" />
+          </div>
         </TabsContent>
         <TabsContent value="edit">
           <!-- TODO: update to submit patch to api (wss met watch) -->
