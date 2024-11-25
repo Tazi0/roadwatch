@@ -18,6 +18,23 @@ def lambda_handler(event, context):
         print(f"Body: {body}")
                 
         incident_id = event['pathParameters']['incident_id']
+        
+        existing_incident = incident_table.get_item(
+            Key={
+                'PK': 'INCIDENT',
+                'SK': f'INCIDENT#{event['pathParameters']['incident_id']}'
+            }
+        )
+                
+        if 'Item' not in existing_incident:
+            return {
+                'statusCode': 404,
+                'body': json.dumps({'message': 'Incident not found'}),
+                'headers': {
+                    'content-type': 'application/json'
+                },
+                "isBase64Encoded": False
+            }
 
         incident_status = body.get('incidentStatus')
         
@@ -44,7 +61,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues=expression_attribute_values,
             ReturnValues="UPDATED_NEW"
         )
-
+        
         return {
             'statusCode': 200,
             'body': json.dumps({'message': 'Incident updated successfully', 'incidentId': incident_id}),
@@ -52,15 +69,6 @@ def lambda_handler(event, context):
                 'content-type': 'application/json'
             },
             "isBase64Encoded": False
-        }
-        
-        return {
-            'statusCode': 201,
-            'body': json.dumps({'message': 'Incident created successfully', 'incidentId': incident_id}),
-            'headers': {
-                'content-type': 'application/json'
-            },
-            'isBase64Encoded': False
         }
     
     except Exception as e:
