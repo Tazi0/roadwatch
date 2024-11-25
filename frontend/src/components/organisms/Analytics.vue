@@ -46,7 +46,9 @@ const averageResponseTime = requestsAccepted.reduce((acc, curr) => {
   return acc
 }, 0)
 
-const avgResponseTimeToMinutes = averageResponseTime / requestsAccepted.length / 1000 / 60
+const avgResponseTimeToMinutes = Math.round(
+  averageResponseTime / requestsAccepted.length / 1000 / 60,
+)
 </script>
 
 <template>

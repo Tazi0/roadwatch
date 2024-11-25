@@ -4,7 +4,7 @@ import { defineProps, defineEmits } from 'vue'
 const props = defineProps<{
   value?: string | number
   type: string
-  placeholder: string
+  placeholder?: string
   disabled?: boolean
   label: string
   inputClass?: string

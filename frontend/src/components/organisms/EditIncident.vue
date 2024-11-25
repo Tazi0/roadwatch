@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IncidentSituation, IncidentStatus, type Incident } from '@/types/api'
-import { defineProps, watch, type PropType } from 'vue'
+import { defineProps, ref, watch, type PropType } from 'vue'
 import Input from '@/components/atoms/Input.vue'
 import Heading from '@/components/atoms/Heading.vue'
 import { Button } from '@/components/ui/button'
@@ -27,17 +27,27 @@ const props = defineProps({
 })
 
 let oldIncident = props.incident || ({} as Incident)
-let incident = props.incident || ({} as Incident)
+const incident = ref<Incident>(props.incident || ({} as Incident))
+const isNewIncident = ref<boolean>(!oldIncident.id)
 
 if (props.autoUpdate) {
   if (store.selected) {
-    incident = store.selected
+    incident.value = store.selected
   }
 
   watch(store, (newStore) => {
     if (newStore.selected) {
-      incident = newStore.selected
+      incident.value = newStore.selected
       oldIncident = newStore.selected
+      isNewIncident.value = false
+    }
+  })
+
+  watch(incident, (newIncident) => {
+    if (!newIncident.id) {
+      store.selected = undefined
+    } else if (!isNewIncident.value) {
+      emit('update', newIncident)
     }
   })
 }
@@ -57,29 +67,30 @@ const incidentStatusOptions = [
 
 function handleSubmit(event: Event) {
   event.preventDefault()
-  emit('create', incident)
-  oldIncident = incident
+  emit('create', incident.value)
+  oldIncident = incident.value
 }
 
 function handeClear() {
-  incident = {} as Incident
+  incident.value = {} as Incident
   oldIncident = {} as Incident
+  isNewIncident.value = true
 }
 </script>
 
 <template>
   <div>
-    <Heading level="1" v-if="oldIncident.id">Edit Incident</Heading>
+    <Heading level="1" v-if="!isNewIncident">Bewerk Incident</Heading>
     <Heading level="1" v-else>Creeër Incident</Heading>
 
-    <form class="flex flex-col gap-3">
+    <form class="flex flex-col gap-3 mb-6">
       <Input
         label="Incident ID"
         :value="incident.id"
         type="text"
         placeholder="Incident ID"
         required
-        :disabled="!!oldIncident.id"
+        :disabled="!isNewIncident"
         inputId="incident-id"
         @input="incident.id = $event as string"
       />
@@ -89,7 +100,6 @@ function handeClear() {
         label="Situation"
         :value="incident.situation"
         type="select"
-        placeholder="Situation"
         inputId="situation"
         :options="incidentSituationOptions"
         @input="incident.situation = $event as IncidentSituation"
@@ -100,7 +110,6 @@ function handeClear() {
         label="Status"
         :value="incident.status"
         type="select"
-        placeholder="Status"
         inputId="status"
         :options="incidentStatusOptions"
         @input="incident.status = $event as IncidentStatus"
@@ -127,16 +136,26 @@ function handeClear() {
       </div>
     </form>
 
-    <div class="flex gap-5 mt-6">
-      <template v-if="oldIncident.id">
-        <Button type="button" @click="() => emit('submitSalvorRequest', incident)">
-          Verstuur berger
-        </Button>
-        <Button type="button" variant="destructive" @click="handeClear">Schoonmaken</Button>
+    <div class="flex gap-5 mb-6">
+      <template v-if="!isNewIncident">
+        <Button @click="() => emit('submitSalvorRequest', incident)">Verstuur berger</Button>
+        <Button variant="destructive" @click="handeClear">Annuleren</Button>
       </template>
       <template v-else>
-        <Button type="submit" @click="handleSubmit">Incident aanmaken</Button>
+        <Button @click="handleSubmit">Incident aanmaken</Button>
       </template>
+    </div>
+
+    <div>
+      <div v-if="incident.requests">
+        <Heading level="2">Requests</Heading>
+        <div v-for="request in incident.requests" :key="request.id">
+          <p>ID: {{ request.id }}</p>
+          <p>Berger: {{ request.salvorName }}</p>
+          <p>Status: {{ request.status }}</p>
+        </div>
+      </div>
+      <div v-if="incident.segment"></div>
     </div>
   </div>
 </template>

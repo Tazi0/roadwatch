@@ -121,6 +121,6 @@ export const getIncidents = async (): Promise<Incident[]> => {
         pendingIncident,
         failedIncident,
       ])
-    }, 100000)
+    }, 100)
   })
 }
