@@ -6,6 +6,7 @@ import EditIncident from '@/components/organisms/EditIncident.vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getIncidents } from '@/gateway/api'
 import { useIncidentsStore } from '@/stores/incidents'
+import IncidentsMap from '@/components/organisms/IncidentsMap.vue'
 
 const store = useIncidentsStore()
 
@@ -30,7 +31,7 @@ getIncidents()
       <ErrorMessage class="min-h-[inherit]" message="Er ging iets fout" :error="store.error" />
     </template>
     <template v-else>
-      <Tabs default-value="analytics" class="py-5">
+      <Tabs default-value="map" class="py-5">
         <TabsList class="mx-auto">
           <TabsTrigger value="map">Globale map</TabsTrigger>
           <TabsTrigger value="edit"
@@ -39,7 +40,7 @@ getIncidents()
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="map">
-          <p>Map</p>
+          <IncidentsMap :incidents="store.incidents" />
         </TabsContent>
         <TabsContent value="edit">
           <!-- TODO: update to submit patch to api (wss met watch) -->

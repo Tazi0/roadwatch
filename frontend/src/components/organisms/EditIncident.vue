@@ -5,6 +5,7 @@ import Input from '@/components/atoms/Input.vue'
 import Heading from '@/components/atoms/Heading.vue'
 import { Button } from '@/components/ui/button'
 import { useIncidentsStore } from '@/stores/incidents'
+import type { UUID } from 'crypto'
 
 const store = useIncidentsStore()
 
@@ -85,6 +86,7 @@ function handeClear() {
 
     <form class="flex flex-col gap-3 mb-6">
       <Input
+        v-if="!isNewIncident"
         label="Incident ID"
         :value="incident.id"
         type="text"
@@ -92,7 +94,7 @@ function handeClear() {
         required
         :disabled="!isNewIncident"
         inputId="incident-id"
-        @input="incident.id = $event as string"
+        @input="incident.id = $event as UUID"
       />
 
       <!-- input for situation -->

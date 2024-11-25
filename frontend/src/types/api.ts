@@ -22,8 +22,8 @@ export enum RequestStatus {
   Confirmed = 'CONFIRMED',
 }
 
-export interface Incident {
-  id: string // RijksWaterStaat ID
+export type Incident = {
+  id: UUID // RijksWaterStaat ID
   situation: IncidentSituation
   status: IncidentStatus
   lat: number
